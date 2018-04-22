@@ -12,6 +12,9 @@ namespace TankGame
         Text scoreText;
 
         [SerializeField]
+        Text lives;
+
+        [SerializeField]
         PlayerUnit player;
 
         private void Awake()
@@ -21,6 +24,7 @@ namespace TankGame
         private void Update()
         {
             scoreText.text = "Score: " + player.Score;
+            lives.text = "Lives: " + player.Life;
         }
 
     }

@@ -21,6 +21,11 @@ namespace TankGame
         [SerializeField]
         int life = 3;
 
+        public int Life
+        {
+            get { return life; }
+        }
+
         Vector3 startPosition;
 
         public int Score
