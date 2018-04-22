@@ -18,7 +18,18 @@ namespace TankGame
         [SerializeField]
         int winScore = 9;
 
-		protected override void Update()
+        Transform startPosition;
+
+        public int Score
+        {
+            get { return score; }
+        }
+
+        private void Awake()
+        {
+            startPosition = transform;
+        }
+        protected override void Update()
 		{
 			var input = ReadInput();
 			Mover.Turn( input.x );
