@@ -9,111 +9,126 @@ using TankGame.WaypointSystem;
 
 namespace TankGame
 {
-	public class EnemyUnit : Unit
-	{
-		[SerializeField]
-		private float _detectEnemyDistance;
+    public class EnemyUnit : Unit
+    {
+        [SerializeField]
+        private float _detectEnemyDistance;
 
-		[SerializeField]
-		private float _shootingDistance;
+        [SerializeField]
+        private float _shootingDistance;
 
-		[SerializeField]
-		private Path _path;
+        [SerializeField]
+        private Path _path;
 
-		[SerializeField]
-		private float _waypointArriveDistance;
+        [SerializeField]
+        private float _waypointArriveDistance;
 
-		[SerializeField]
-		private Direction _direction;
+        [SerializeField]
+        private Direction _direction;
 
-		private IList<AIStateBase> _states = new List< AIStateBase >();
+        private Vector3 startPosition;
 
-		public AIStateBase CurrentState { get; private set; }
-		// How far the enemy can "see" the player.
-		public float DetectEnemyDistance { get { return _detectEnemyDistance; } }
-		// The distance the enemy shoots the player.
-		public float ShootingDistance { get { return _shootingDistance; } }
-		// The player unit this enemy is trying to shoot at.
-		public PlayerUnit Target { get; set; }
-		
-		public Vector3? ToTargetVector
-		{
-			get
-			{
-				if ( Target != null )
-				{
-					return Target.transform.position - transform.position;
-				}
-				return null;
-			}
-		}
+        private IList<AIStateBase> _states = new List<AIStateBase>();
 
-		public override void Init()
-		{
-			// Runs the base classes implementation of the Init method. Initializes Mover and 
-			// Weapon.
-			base.Init();
-			// Initializes the state system.
-			InitStates();
-		}
+        public AIStateBase CurrentState { get; private set; }
+        // How far the enemy can "see" the player.
+        public float DetectEnemyDistance { get { return _detectEnemyDistance; } }
+        // The distance the enemy shoots the player.
+        public float ShootingDistance { get { return _shootingDistance; } }
+        // The player unit this enemy is trying to shoot at.
+        public PlayerUnit Target { get; set; }
 
-		private void InitStates()
-		{
-			PatrolState patrol = 
-				new PatrolState( this, _path, _direction, _waypointArriveDistance );
-			_states.Add( patrol );
+        private void Awake()
+        {
+            startPosition = transform.position;   
+        }
 
-			FollowTargetState followTarget = new FollowTargetState( this );
-			_states.Add( followTarget );
+        public Vector3? ToTargetVector
+        {
+            get
+            {
+                if (Target != null)
+                {
+                    return Target.transform.position - transform.position;
+                }
+                return null;
+            }
+        }
 
-			ShootState shoot = new ShootState( this );
-			_states.Add( shoot );
+        public override void Init()
+        {
+            // Runs the base classes implementation of the Init method. Initializes Mover and 
+            // Weapon.
+            base.Init();
+            // Initializes the state system.
+            InitStates();
+        }
 
-			CurrentState = patrol;
-			CurrentState.StateActivated();
-		}
+        private void InitStates()
+        {
+            PatrolState patrol =
+                new PatrolState(this, _path, _direction, _waypointArriveDistance);
+            _states.Add(patrol);
 
-		protected override void Update()
-		{
-			CurrentState.Update();
-		}
+            FollowTargetState followTarget = new FollowTargetState(this);
+            _states.Add(followTarget);
 
-		public bool PerformTransition( AIStateType targetState )
-		{
-			if ( !CurrentState.CheckTransition( targetState ) )
-			{
-				return false;
-			}
+            ShootState shoot = new ShootState(this);
+            _states.Add(shoot);
 
-			bool result = false;
+            CurrentState = patrol;
+            CurrentState.StateActivated();
+        }
 
-			AIStateBase state = GetStateByType( targetState );
-			if ( state != null )
-			{
-				CurrentState.StateDeactivating();
-				CurrentState = state;
-				CurrentState.StateActivated();
-				result = true;
-			}
+        protected override void Update()
+        {
+            CurrentState.Update();
+        }
 
-			return result;
-		}
+        public bool PerformTransition(AIStateType targetState)
+        {
+            if (!CurrentState.CheckTransition(targetState))
+            {
+                return false;
+            }
 
-		private AIStateBase GetStateByType( AIStateType stateType )
-		{
-			// Returns the first object from the list _states which State property's value
-			// equals to stateType. If no object is found, returns null.
-			return _states.FirstOrDefault( state => state.State == stateType );
-			
-			// Foreach version of the same thing.
-			//foreach ( AIStateBase state in _states )
-			//{
-			//	if ( state.State == stateType )
-			//	{
-			//		return state;
-			//	}
-			//}
-			//return null;
-		}
-	}
+            bool result = false;
+
+            AIStateBase state = GetStateByType(targetState);
+            if (state != null)
+            {
+                CurrentState.StateDeactivating();
+                CurrentState = state;
+                CurrentState.StateActivated();
+                result = true;
+            }
+
+            return result;
+        }
+
+        private AIStateBase GetStateByType(AIStateType stateType)
+        {
+            // Returns the first object from the list _states which State property's value
+            // equals to stateType. If no object is found, returns null.
+            return _states.FirstOrDefault(state => state.State == stateType);
+
+            // Foreach version of the same thing.
+            //foreach ( AIStateBase state in _states )
+            //{
+            //	if ( state.State == stateType )
+            //	{
+            //		return state;
+            //	}
+            //}
+            //return null;
+        }
+
+        public override void Respawn()
+        {
+            Health.SetHealth(50);
+            transform.position = startPosition;
+        }
+
+    }
 }
+
